@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estimasi Curah Hujan Tahun Kalender — ZOM 566 / Wajo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B1220;--bg2:#0E1830;--el:#141F3B;--el2:#1B2A4D;--line:#28395F;--ink:#EAEEF9;--mut:#8DA0C7;--dim:#5D6E93;--dry:#E3A857;--wet:#39B7A6;--neu:#7387B8;--grid:#1D2C4E}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+.eye{font:12px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--wet);margin-bottom:14px}
+h1{font:600 clamp(28px,4.2vw,48px)/1.06 Fraunces,serif;margin:0 0 12px}h1 em{font-weight:400;color:var(--dry)}
+.sub{color:var(--mut);font-size:15px;line-height:1.6;max-width:700px;margin-bottom:30px}
+.hero{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stat{background:var(--el);padding:18px 20px}.stat .l{font:10.5px 'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.08em;margin-bottom:8px}
+.stat .v{font:600 26px Fraunces,serif}.stat small{font:500 12px Inter;color:var(--mut);margin-left:4px}.stat .d{font:11.5px 'IBM Plex Mono',monospace;margin-top:7px;color:var(--neu)}
+.d.down{color:var(--dry)}.d.up{color:var(--wet)}
+.sh{display:flex;align-items:baseline;gap:12px;margin:48px 0 14px}.sh h2{font:600 21px Fraunces,serif;margin:0}.sh i{flex:1;height:1px;background:var(--line)}.sh b{font:12px 'IBM Plex Mono',monospace;color:var(--dim)}
+.desc{color:var(--mut);font-size:13.5px;line-height:1.6;max-width:720px;margin-bottom:18px}
+.deck,.card{background:var(--el);border:1px solid var(--line);border-radius:14px;padding:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:11px 'IBM Plex Mono',monospace;background:var(--el2);border:1px solid var(--line);color:var(--mut);padding:7px 12px;border-radius:8px;cursor:pointer}.btn.on{color:var(--dry);border-color:var(--dry)}
+.iod{font:11px 'IBM Plex Mono',monospace;color:var(--mut)}.iod input{width:64px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px;font:inherit}
+.status{font:11.5px 'IBM Plex Mono',monospace;color:var(--mut);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:20px;font-size:10.5px;text-transform:uppercase;background:rgba(115,135,184,.2);color:#A9BAE0}.badge.live{background:rgba(57,183,166,.18);color:var(--wet)}.badge.cache,.badge.snap{background:rgba(227,168,87,.18);color:var(--dry)}
+.msg{font:11.5px/1.55 'IBM Plex Mono',monospace;color:var(--dim);margin:0 0 14px}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px}
+.sc{display:flex;flex-direction:column;align-items:center;padding:8px 2px}.sc .m{font:10.5px 'IBM Plex Mono',monospace;color:var(--dim);margin-bottom:8px}.sc .v{font:600 13px 'IBM Plex Mono',monospace;margin-top:8px}
+.src{font:9px 'IBM Plex Mono',monospace;margin-top:5px;padding:1px 6px;border-radius:10px;background:rgba(115,135,184,.2);color:#A9BAE0}.src.obs,.src.mtd{background:rgba(57,183,166,.18);color:var(--wet)}.src.fc,.src.man{background:rgba(227,168,87,.18);color:var(--dry)}
+.sc input{writing-mode:vertical-lr;direction:rtl;width:6px;height:80px;-webkit-appearance:none;background:linear-gradient(to top,#2C8F82,var(--grid) 50%,#B9873F);border-radius:6px}.sc input:disabled{opacity:.45}
+.sc input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:9px;border-radius:3px;background:var(--ink)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font:11px 'IBM Plex Mono',monospace;color:var(--mut);margin-bottom:6px}.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+#chart{width:100%;height:auto;display:block}.bar:hover{filter:brightness(1.25)}.bt{stroke:#4C5C86;stroke-width:1.4;stroke-dasharray:2 2}.el{fill:none;stroke:var(--dry);stroke-width:2}
+.ax{font:9.5px 'IBM Plex Mono',monospace;fill:var(--dim)}.ml{font:10px 'IBM Plex Mono',monospace;fill:var(--mut)}
+#tip{position:absolute;pointer-events:none;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font:11.5px/1.6 'IBM Plex Mono',monospace;opacity:0;white-space:nowrap;z-index:5}#tip b{color:var(--dry)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--el)}table{width:100%;border-collapse:collapse;min-width:820px}
+th{font:9.5px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);text-align:left;padding:10px;border-bottom:1px solid var(--line)}
+td{padding:7px 10px;border-bottom:1px solid var(--grid);font:11px 'IBM Plex Mono',monospace}tr.md td{border-top:1px solid var(--line)}
+.cat{padding:2px 7px;border-radius:20px;font-size:9.5px}.bn{background:rgba(227,168,87,.16);color:var(--dry)}.n{background:rgba(115,135,184,.18);color:#A9BAE0}.an{background:rgba(57,183,166,.16);color:var(--wet)}
+.neg{color:var(--dry)}.pos{color:var(--wet)}.pb{display:flex;height:8px;width:130px;border-radius:4px;overflow:hidden;background:var(--grid)}.pb i{display:block;height:100%}
+.mg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}.mc{background:var(--el);padding:20px}
+.mc h3{font:600 16px Fraunces,serif;margin:0 0 8px}.mc p{font-size:13px;color:var(--mut);line-height:1.6;margin:0}.fm{font:12px 'IBM Plex Mono',monospace;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-top:10px;color:#C9D4EE;overflow-x:auto}
+.cv{margin-top:18px;padding:16px 18px;border-radius:12px;background:rgba(227,168,87,.07);border:1px solid rgba(227,168,87,.28);font-size:13px;color:#D8C4A0;line-height:1.65}.cv b{color:var(--dry)}
+footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font:11px 'IBM Plex Mono',monospace;color:var(--dim)}
+@media(max-width:720px){.hero{grid-template-columns:1fr 1fr}.mg{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<div class="eye" id="period">ZOM 566 · WAJO · PRAKIRAAN 12 BULAN KE DEPAN</div>
+<h1>Ringkasan curah hujan tahunan,<br><em>dan prakiraan 12 bulan ke depan</em>.</h1>
+<p class="sub">Kartu ringkasan membandingkan normal klimatologi tahunan ZOM 566 (1991–2020; tidak khusus untuk satu tahun) dengan estimasi model Januari–Desember tahun kalender berjalan. Grafik, slider ENSO, tabel bulanan, dan rincian dasarian tetap menampilkan prakiraan bergulir 12 bulan ke depan, mulai bulan berikutnya. Data hujan untuk pelatihan tetap dibekukan pada 2008–2025. Total tahun berjalan adalah estimasi model, bukan akumulasi hujan aktual, karena data observasi hujan setelah 2025 tidak dimasukkan ke TELE. Bukan prakiraan resmi BMKG.</p>
+<div class="hero" id="hero"></div>
+
+<div class="sh"><b>01</b><h2>Indeks ENSO & IOD</h2><i></i></div>
+<p class="desc">OBS = indeks Niño-3.4 bulanan teramati, MTD = rerata indeks mingguan bulan berjalan, FCST = prakiraan dari Spreadsheet/Apps Script, STAT = estimasi statistik, PROY = lintasan analog bila prakiraan tidak tersedia. Lintasan analog bukan prakiraan resmi NOAA. IOD ditampilkan sebagai informasi dan belum memengaruhi proyeksi hujan.</p>
+<div class="deck"><div class="top"><div class="status"><span class="badge" id="badge">memuat…</span><span id="sl">Menghubungi NOAA CPC…</span></div>
+<div class="btns"><label class="iod">IOD (DMI) <input id="iod" type="number" step="0.05" value="0.39"></label><button class="btn" id="rf">↻ AMBIL ULANG</button><button class="btn" id="mb">✎ MANUAL: MATI</button></div></div>
+<p class="msg" id="sm"></p><div class="sliders" id="sd"></div></div>
+
+<div class="sh"><b>02</b><h2>Grafik prakiraan 12 bulan ke depan</h2><i></i></div>
+<div class="card" style="position:relative"><div class="legend"><span><i class="sw" style="background:rgba(141,160,199,.32);border:1px solid #8DA0C7"></i>Baseline klimatologi (batang latar)</span><span><i class="sw" style="background:var(--dry)"></i>Proyeksi Bawah Normal</span><span><i class="sw" style="background:var(--neu)"></i>Proyeksi Normal</span><span><i class="sw" style="background:var(--wet)"></i>Proyeksi Atas Normal</span></div>
+<svg id="chart" viewBox="0 0 1080 420"></svg><div id="tip"></div></div>
+
+<div class="sh"><b>03</b><h2>Total per bulan & peluang kategori — prakiraan 12 bulan</h2><i></i></div>
+<p class="desc">Tabel ini tetap untuk jendela prakiraan 12 bulan ke depan yang sama dengan grafik dan slider di atas. Peluang BN (&lt;85%), N, dan AN (&gt;115% baseline) dihitung memakai distribusi Gamma dengan CV bulanan asumsi 0,45; peluang ini belum terkalibrasi empiris.</p>
+<div class="tw"><table><thead><tr><th>Bulan</th><th>Baseline</th><th>Proyeksi</th><th>P10–P90</th><th>%</th><th>ENSO</th><th>Faktor F</th><th>Peluang BN / N / AN</th><th>Kategori</th></tr></thead><tbody id="mb2"></tbody></table></div>
+
+<div class="sh"><b>04</b><h2>Validasi historis (hindcast)</h2><i></i></div>
+<p class="desc">Evaluasi historis membandingkan baseline klimatologi dengan model yang dikoreksi ENSO. Pada versi ini, hindcast memakai Niño-3.4 teramati pada bulan target karena arsip prakiraan ENSO historis tidak tersedia di sumber kode. Karena itu, hasil ini adalah uji hubungan bersyarat, bukan ukuran murni keterampilan prakiraan operasional.</p>
+<div class="tw"><table><thead><tr><th>Metode</th><th>Jumlah uji</th><th>MAE (mm)</th><th>RMSE (mm)</th><th>Bias (mm)</th></tr></thead><tbody id="hindcast"></tbody></table></div>
+<div class="sh"><b>05</b><h2>Rincian dasarian (opsional)</h2><i></i></div>
+<div class="tw"><table><thead><tr><th>Periode</th><th>Baseline</th><th>ENSO</th><th>b ENSO / n</th><th>F</th><th>Proyeksi</th><th>P10–P90</th><th>Kategori</th></tr></thead><tbody id="tb"></tbody></table></div>
+
+<div class="sh"><b>06</b><h2>Metodologi</h2><i></i></div>
+<div class="mg">
+<div class="mc"><h3>Koreksi ENSO</h3><p>Faktor dikalibrasi dari hubungan historis log-rasio hujan terhadap Niño-3.4. Jika data pasangan tidak cukup, koreksi ENSO dinonaktifkan (F = 1).</p><div class="fm">ln(R/R₀) = a + b·ENSO + ε<br>F = exp(a + b·ENSO)</div></div>
+<div class="mc"><h3>Kalibrasi koefisien</h3><p>Regresi log-rasio dengan intersep; koefisien kemiringan disusutkan ke nol untuk mengurangi ekstrem pada sampel terbatas. Minimal 8 pasangan valid per bulan adalah syarat awal, bukan bukti validasi.</p><div class="fm">y = ln(R/R₀) = a + b·ENSO<br>b = b_raw × n/(n + 8)</div></div>
+<div class="mc"><h3>Selang Gamma</h3><p>Hujan kontinu, condong ke kanan, bersatuan mm. CV dasarian 0,9; bulanan 0,45.</p><div class="fm">α = 1/CV², θ = λ'/α<br>P10/P90 = GAMMA.INV(p, α, θ)</div></div></div>
+<div class="cv"><b>Keterbatasan dan status ilmiah:</b> Data hujan TELE dibekukan pada 2008–2025, dan hanya rentang tahun tersebut digunakan saat kalibrasi. Koefisien ENSO dilatih dari pasangan hujan historis dan Niño-3.4 historis NOAA. Nilai berlabel FCST berasal dari prakiraan yang dikirim melalui Spreadsheet/Apps Script (dalam konfigurasi ini, input BoM), sedangkan STAT adalah estimasi statistik. Definisi indeks BoM dan NOAA dapat berbeda, sehingga koreksi ENSO lintas-sumber ini bersifat eksperimental dan perlu diselaraskan sebelum dipakai sebagai prakiraan operasional; nilai ENSO yang hilang tidak diganti dengan nol. Bulan dengan kurang dari 8 pasangan valid tidak diberi koreksi ENSO. Data hujan nol tidak masuk regresi log-rasio, sehingga pengaruh terhadap peluang bulan kering belum dimodelkan secara terpisah. IOD belum memengaruhi proyeksi. CV Gamma 0,9 (dasarian) masih asumsi, sedangkan CV bulanan telah dikalibrasi secara dinamis dari variansi data historis per bulan dengan batas keamanan 0,35–0,75 untuk menghindari proyeksi P10 yang nol mutlak (ekstrem). Jika observasi bulan berjalan tersedia hanya sebagai total bulanan berjalan, pembagian ke dasarian merupakan alokasi berdasarkan normal, bukan pengukuran dasarian aktual. Pastikan CLIM benar-benar sesuai normal ZOM 566 1991–2020 dan uji hindcast terhadap baseline sebelum menilai keterampilan prediksi. Ini model eksperimental, bukan prakiraan resmi BMKG; bandingkan dengan informasi terbaru di iklim.bmkg.go.id.</div>
+<footer>SUMBER: NOAA CPC untuk seri historis Niño-3.4 dan estimasi statistik ENSO; normal ZOM 566 (1991–2020); telemetri BBWS Pompengan Jeneberang. Prakiraan ENSO masa depan adalah estimasi statistik/analog, bukan prakiraan resmi NOAA. Data latih hujan tetap 2008–2025. Model eksperimental.</footer></div>
+<script>
+const CLIM=[41,34,39,31,35,31,34,44,57,60,71,89,107,79,101,100,91,73,74,66,41,25,21,22,23,18,27,37,33,41,48,47,53,45,38,55];
+const NM=['','JAN','FEB','MAR','APR','MEI','JUN','JUL','AGU','SEP','OKT','NOV','DES'];
+const FL=['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const SN={10:2.22,11:2.47,12:2.39,1:2.28,2:1.96,3:1.56,4:.99,5:.41,6:.1,7:-.03,8:0,9:0};
+const MIN_N_ENSO=8, SHRINK_K=8;
+const CVD=.9,STARTS=[0,10,20],LENS=[10,10,11];
+
+const TELE = [
+  /* 2000 */ {y:2000,mo:1,mm:60,e:0},{y:2000,mo:2,mm:12,e:0},{y:2000,mo:3,mm:99,e:0},{y:2000,mo:4,mm:108,e:0},{y:2000,mo:5,mm:160,e:0},{y:2000,mo:6,mm:637,e:0},{y:2000,mo:7,mm:244,e:0},{y:2000,mo:8,mm:164,e:0},{y:2000,mo:9,mm:118,e:0},{y:2000,mo:10,mm:175,e:0},{y:2000,mo:11,mm:148,e:0},{y:2000,mo:12,mm:67,e:0},
+  /* 2001 */ {y:2001,mo:1,mm:226,e:0},{y:2001,mo:2,mm:101,e:0},{y:2001,mo:3,mm:138,e:0},{y:2001,mo:4,mm:396,e:0},{y:2001,mo:5,mm:223,e:0},{y:2001,mo:6,mm:388,e:0},{y:2001,mo:7,mm:84,e:0},{y:2001,mo:8,mm:37,e:0},{y:2001,mo:9,mm:227,e:0},{y:2001,mo:10,mm:56,e:0},{y:2001,mo:11,mm:136,e:0},{y:2001,mo:12,mm:113,e:0},
+  /* 2002 */ {y:2002,mo:1,mm:244,e:0},{y:2002,mo:2,mm:66,e:0},{y:2002,mo:3,mm:139,e:0},{y:2002,mo:4,mm:314,e:0},{y:2002,mo:5,mm:397,e:0},{y:2002,mo:6,mm:305,e:0},{y:2002,mo:7,mm:43,e:0},{y:2002,mo:8,mm:18,e:0},{y:2002,mo:9,mm:0,e:0},{y:2002,mo:10,mm:0,e:0},{y:2002,mo:11,mm:110,e:0},{y:2002,mo:12,mm:277,e:0},
+  /* 2003 */ {y:2003,mo:1,mm:91,e:0},{y:2003,mo:2,mm:0,e:0},{y:2003,mo:3,mm:0,e:0},{y:2003,mo:4,mm:614,e:0},{y:2003,mo:5,mm:325,e:0},{y:2003,mo:6,mm:442,e:0},{y:2003,mo:7,mm:370,e:0},{y:2003,mo:8,mm:233,e:0},{y:2003,mo:9,mm:143,e:0},{y:2003,mo:10,mm:41,e:0},{y:2003,mo:11,mm:142,e:0},{y:2003,mo:12,mm:262,e:0},
+  /* 2006 */ {y:2006,mo:1,mm:0,e:0},{y:2006,mo:2,mm:158,e:0},{y:2006,mo:3,mm:194,e:0},{y:2006,mo:4,mm:117,e:0},{y:2006,mo:5,mm:245,e:0},{y:2006,mo:6,mm:412,e:0},{y:2006,mo:7,mm:31,e:0},{y:2006,mo:8,mm:11,e:0},{y:2006,mo:9,mm:10,e:0},{y:2006,mo:10,mm:0,e:0},{y:2006,mo:11,mm:175,e:0},{y:2006,mo:12,mm:110,e:0},
+  /* 2007 */ {y:2007,mo:1,mm:29,e:0},{y:2007,mo:2,mm:90,e:0},{y:2007,mo:3,mm:95,e:0},{y:2007,mo:4,mm:182,e:0},{y:2007,mo:5,mm:475,e:0},{y:2007,mo:6,mm:576,e:0},{y:2007,mo:7,mm:205,e:0},{y:2007,mo:8,mm:142,e:0},{y:2007,mo:9,mm:12,e:0},{y:2007,mo:10,mm:98,e:0},{y:2007,mo:11,mm:187,e:0},{y:2007,mo:12,mm:108,e:0},
+  /* 2008 */ {y:2008,mo:1,mm:114,e:0},{y:2008,mo:2,mm:5,e:0},{y:2008,mo:3,mm:269,e:0},{y:2008,mo:4,mm:329,e:0},{y:2008,mo:5,mm:356,e:0},{y:2008,mo:6,mm:276,e:0},{y:2008,mo:7,mm:478,e:0},{y:2008,mo:8,mm:263,e:0},{y:2008,mo:9,mm:99,e:0},{y:2008,mo:10,mm:194,e:0},{y:2008,mo:11,mm:139,e:0},{y:2008,mo:12,mm:70,e:0},
+  /* 2009 */ {y:2009,mo:1,mm:22,e:0},{y:2009,mo:2,mm:0,e:0},{y:2009,mo:3,mm:127,e:0},{y:2009,mo:4,mm:115,e:0},{y:2009,mo:5,mm:157,e:0},{y:2009,mo:6,mm:95,e:0},{y:2009,mo:7,mm:93,e:0},{y:2009,mo:8,mm:0,e:0},{y:2009,mo:9,mm:33,e:0},{y:2009,mo:10,mm:83,e:0},{y:2009,mo:11,mm:109,e:0},{y:2009,mo:12,mm:7,e:0},
+  /* 2010 */ {y:2010,mo:1,mm:27,e:0},{y:2010,mo:2,mm:98,e:0},{y:2010,mo:3,mm:121,e:0},{y:2010,mo:4,mm:215,e:0},{y:2010,mo:5,mm:430,e:0},{y:2010,mo:6,mm:716,e:0},{y:2010,mo:7,mm:869,e:0},{y:2010,mo:8,mm:411,e:0},{y:2010,mo:9,mm:605,e:0},{y:2010,mo:10,mm:311,e:0},{y:2010,mo:11,mm:215,e:0},{y:2010,mo:12,mm:18,e:0},
+  /* 2011 */ {y:2011,mo:1,mm:21,e:0},{y:2011,mo:2,mm:32,e:0},{y:2011,mo:3,mm:35,e:0},{y:2011,mo:4,mm:127,e:0},{y:2011,mo:5,mm:293,e:0},{y:2011,mo:6,mm:154,e:0},{y:2011,mo:7,mm:154,e:0},{y:2011,mo:8,mm:70,e:0},{y:2011,mo:9,mm:81,e:0},{y:2011,mo:10,mm:359,e:0},{y:2011,mo:11,mm:248,e:0},{y:2011,mo:12,mm:86,e:0},
+  /* 2012 */ {y:2012,mo:1,mm:4,e:0},{y:2012,mo:2,mm:149,e:0},{y:2012,mo:3,mm:131,e:0},{y:2012,mo:4,mm:329,e:0},{y:2012,mo:5,mm:252,e:0},{y:2012,mo:6,mm:130,e:0},{y:2012,mo:7,mm:221,e:0},{y:2012,mo:8,mm:24,e:0},{y:2012,mo:9,mm:17,e:0},{y:2012,mo:10,mm:251,e:0},{y:2012,mo:11,mm:93,e:0},{y:2012,mo:12,mm:127,e:0},
+  /* 2013 */ {y:2013,mo:1,mm:37,e:0},{y:2013,mo:2,mm:54,e:0},{y:2013,mo:3,mm:54,e:0},{y:2013,mo:4,mm:288,e:0},{y:2013,mo:5,mm:400,e:0},{y:2013,mo:6,mm:204,e:0},{y:2013,mo:7,mm:566,e:0},{y:2013,mo:8,mm:195,e:0},{y:2013,mo:9,mm:114,e:0},{y:2013,mo:10,mm:114,e:0},{y:2013,mo:11,mm:183,e:0},{y:2013,mo:12,mm:100,e:0},
+  /* 2014 */ {y:2014,mo:1,mm:56,e:0},{y:2014,mo:2,mm:31,e:0},{y:2014,mo:3,mm:53,e:0},{y:2014,mo:4,mm:32,e:0},{y:2014,mo:5,mm:417,e:0},{y:2014,mo:6,mm:415,e:0},{y:2014,mo:7,mm:107,e:0},{y:2014,mo:8,mm:115,e:0},{y:2014,mo:9,mm:0,e:0},{y:2014,mo:10,mm:42,e:0},{y:2014,mo:11,mm:54,e:0},{y:2014,mo:12,mm:118,e:0},
+  /* 2015 */ {y:2015,mo:1,mm:11,e:0},{y:2015,mo:2,mm:77,e:0},{y:2015,mo:3,mm:132,e:0},{y:2015,mo:4,mm:305,e:0},{y:2015,mo:5,mm:306,e:0},{y:2015,mo:6,mm:304,e:0},{y:2015,mo:7,mm:21,e:0},{y:2015,mo:8,mm:5,e:0},{y:2015,mo:9,mm:37,e:0},{y:2015,mo:10,mm:0,e:0},{y:2015,mo:11,mm:8,e:0},{y:2015,mo:12,mm:95,e:0},
+  /* 2016 */ {y:2016,mo:1,mm:131,e:0},{y:2016,mo:2,mm:164,e:0},{y:2016,mo:3,mm:134,e:0},{y:2016,mo:4,mm:410,e:0},{y:2016,mo:5,mm:449,e:0},{y:2016,mo:6,mm:289,e:0},{y:2016,mo:7,mm:115,e:0},{y:2016,mo:8,mm:26,e:0},{y:2016,mo:9,mm:156,e:0},{y:2016,mo:10,mm:226,e:0},{y:2016,mo:11,mm:390,e:0},{y:2016,mo:12,mm:14,e:0},
+  /* 2017 */ {y:2017,mo:1,mm:7,e:0},{y:2017,mo:2,mm:172,e:0},{y:2017,mo:3,mm:121,e:0},{y:2017,mo:4,mm:135,e:0},{y:2017,mo:5,mm:615,e:0},{y:2017,mo:6,mm:229,e:0},{y:2017,mo:7,mm:257,e:0},{y:2017,mo:8,mm:128,e:0},{y:2017,mo:9,mm:128,e:0},{y:2017,mo:10,mm:330,e:0},{y:2017,mo:11,mm:14,e:0},{y:2017,mo:12,mm:36,e:0},
+  /* 2018 */ {y:2018,mo:1,mm:146,e:0},{y:2018,mo:2,mm:73,e:0},{y:2018,mo:3,mm:113,e:0},{y:2018,mo:4,mm:231,e:0},{y:2018,mo:5,mm:401,e:0},{y:2018,mo:6,mm:411,e:0},{y:2018,mo:7,mm:144,e:0},{y:2018,mo:8,mm:7,e:0},{y:2018,mo:9,mm:49,e:0},{y:2018,mo:10,mm:57,e:0},{y:2018,mo:11,mm:133,e:0},{y:2018,mo:12,mm:16,e:0},
+  /* 2019 */ {y:2019,mo:1,mm:118.7,e:0},{y:2019,mo:2,mm:62.1,e:0},{y:2019,mo:3,mm:102.9,e:0},{y:2019,mo:4,mm:341,e:0},{y:2019,mo:5,mm:238.9,e:0},{y:2019,mo:6,mm:361.5,e:0},{y:2019,mo:7,mm:39,e:0},{y:2019,mo:8,mm:47.5,e:0},{y:2019,mo:9,mm:74,e:0},{y:2019,mo:10,mm:41,e:0},{y:2019,mo:11,mm:25,e:0},{y:2019,mo:12,mm:117.5,e:0},
+  /* 2020 */ {y:2020,mo:1,mm:154.5,e:0},{y:2020,mo:2,mm:133.8,e:0},{y:2020,mo:3,mm:160.3,e:0},{y:2020,mo:4,mm:240.6,e:0},{y:2020,mo:5,mm:403.6,e:0},{y:2020,mo:6,mm:449.5,e:0},{y:2020,mo:7,mm:550.8,e:0},{y:2020,mo:8,mm:74,e:0},{y:2020,mo:9,mm:243.1,e:0},{y:2020,mo:10,mm:135.3,e:0},{y:2020,mo:11,mm:155.3,e:0},{y:2020,mo:12,mm:83.3,e:0},
+  /* 2021 */ {y:2021,mo:1,mm:136.4,e:0},{y:2021,mo:2,mm:47.6,e:0},{y:2021,mo:3,mm:113.7,e:0},{y:2021,mo:4,mm:90.2,e:0},{y:2021,mo:5,mm:458.9,e:0},{y:2021,mo:6,mm:326.6,e:0},{y:2021,mo:7,mm:325.3,e:0},{y:2021,mo:8,mm:590.5,e:0},{y:2021,mo:9,mm:260.9,e:0},{y:2021,mo:10,mm:216.3,e:0},{y:2021,mo:11,mm:252.3,e:0},{y:2021,mo:12,mm:138.9,e:0},
+  /* 2022 */ {y:2022,mo:1,mm:65.5,e:0},{y:2022,mo:2,mm:109.6,e:0},{y:2022,mo:3,mm:106.8,e:0},{y:2022,mo:4,mm:189.8,e:0},{y:2022,mo:5,mm:263.1,e:0},{y:2022,mo:6,mm:435.9,e:0},{y:2022,mo:7,mm:306.4,e:0},{y:2022,mo:8,mm:366.3,e:0},{y:2022,mo:9,mm:197.1,e:0},{y:2022,mo:10,mm:276.1,e:0},{y:2022,mo:11,mm:158.2,e:0},{y:2022,mo:12,mm:148.2,e:0},
+  /* 2023 */ {y:2023,mo:1,mm:50.5,e:0},{y:2023,mo:2,mm:83.4,e:0},{y:2023,mo:3,mm:180.1,e:0},{y:2023,mo:4,mm:151.6,e:0},{y:2023,mo:5,mm:251,e:0},{y:2023,mo:6,mm:220.3,e:0},{y:2023,mo:7,mm:164.1,e:0},{y:2023,mo:8,mm:52.5,e:0},{y:2023,mo:9,mm:18.5,e:0},{y:2023,mo:10,mm:31.6,e:0},{y:2023,mo:11,mm:165.1,e:0},{y:2023,mo:12,mm:91,e:0},
+  /* 2024 */ {y:2024,mo:1,mm:139.8,e:0},{y:2024,mo:2,mm:78,e:0},{y:2024,mo:3,mm:147.2,e:0},{y:2024,mo:4,mm:380.5,e:0},{y:2024,mo:5,mm:450.2,e:0},{y:2024,mo:6,mm:256.1,e:0},{y:2024,mo:7,mm:470.9,e:0},{y:2024,mo:8,mm:131.3,e:0},{y:2024,mo:9,mm:116.6,e:0},{y:2024,mo:10,mm:137.2,e:0},{y:2024,mo:11,mm:185.7,e:0},{y:2024,mo:12,mm:126.4,e:0},
+  /* 2025 */ {y:2025,mo:1,mm:56,e:0},{y:2025,mo:2,mm:114,e:0},{y:2025,mo:3,mm:140.4,e:0},{y:2025,mo:4,mm:155.2,e:0},{y:2025,mo:5,mm:260.4,e:0},{y:2025,mo:6,mm:291.6,e:0},{y:2025,mo:7,mm:134,e:0},{y:2025,mo:8,mm:136.3,e:0},{y:2025,mo:9,mm:179,e:0},{y:2025,mo:10,mm:220.9,e:0},{y:2025,mo:11,mm:66.3,e:0},{y:2025,mo:12,mm:71.1,e:0}
+];
+
+/* ===== ENGINE v6 ===== */
+const TRAIN_MIN_Y=2000, TRAIN_MAX_Y=2025, E_LO=-2, E_HI=2.5, F_LO=.3, F_HI=2.5, T_MIN=1.65, ATT=.35;
+const RAIN=TELE.filter(t=>t.y>=TRAIN_MIN_Y&&t.y<=TRAIN_MAX_Y&&Number.isFinite(t.mm)&&t.mm>=0&&(t.mm>0||(t.mo>=7&&t.mo<=11)));
+const prevKeys=(y,mo)=>[1,2,3].map(k=>{const z=y*12+mo-1-k;return Math.floor(z/12)+'-'+(z%12+1)});
+function lagE(y,mo,map){const v=prevKeys(y,mo).map(k=>map[k]).filter(Number.isFinite);return v.length>=2?v.reduce((s,x)=>s+x,0)/v.length:null}
+function fit(mo,skipY){
+  const P=[];RAIN.forEach(t=>{if(t.mo!==mo||t.y===skipY)return;const x=lagE(t.y,t.mo,allObs);if(x!==null)P.push({x,y:t.mm})});
+  const n=P.length,mu0=n?P.reduce((s,p)=>s+p.y,0)/n:NORM(mo);
+  const R={n,mean:mu0>0?mu0:NORM(mo),a:Math.log(Math.max(mu0,1e-6)),b:0,ok:false,cv:.5,t:0};
+  if(n<MIN_N_ENSO||!(mu0>0))return R;
+  let a=R.a,b=0,s0,s1,s2;
+  for(let it=0;it<60;it++){
+    s0=s1=s2=0;let r0=0,r1=0;
+    P.forEach(p=>{const m=Math.exp(a+b*p.x),z=a+b*p.x+(p.y-m)/m;s0+=m;s1+=m*p.x;s2+=m*p.x*p.x;r0+=m*z;r1+=m*p.x*z});
+    const d=s0*s2-s1*s1;if(Math.abs(d)<1e-9)break;
+    const na=(r0*s2-r1*s1)/d,nb=(s0*r1-s1*r0)/d,ch=Math.abs(na-a)+Math.abs(nb-b);a=na;b=nb;if(ch<1e-8)break}
+  const phi=P.reduce((s,p)=>{const m=Math.exp(a+b*p.x);return s+(p.y-m)**2/m},0)/Math.max(1,n-2);
+  const se=Math.sqrt(phi*s0/Math.max(1e-9,s0*s2-s1*s1)),t=se>0?b/se:0;
+  R.t=t;
+  if(Math.abs(t)>=T_MIN){
+    b=b*n/(n+SHRINK_K);
+    a=Math.log(P.reduce((s,p)=>s+p.y,0)/P.reduce((s,p)=>s+Math.exp(b*p.x),0));
+    R.a=a;R.b=b;R.ok=true}
+  const sd=Math.sqrt(P.reduce((s,p)=>s+(p.y-Math.exp(R.a+R.b*p.x))**2,0)/Math.max(1,n-(R.ok?2:1)));
+  R.cv=Math.min(1.5,Math.max(.2,sd/R.mean));
+  return R}
+const beta=mo=>fit(mo);
+function predict(f,e,att){
+  const x=Math.max(E_LO,Math.min(E_HI,e))*att;
+  const F=f.ok?Math.max(F_LO,Math.min(F_HI,Math.exp(f.a+f.b*x)/f.mean)):1;
+  return{F,mu:f.mean*F}}
+function ensoAutoFor(monthList){
+  const kn=monthList.map(m=>
+    allObs[key(m)]!==undefined?{v:allObs[key(m)],s:'obs'}:
+    mtd[key(m)]!==undefined?{v:mtd[key(m)],s:'mtd'}:
+    fcst[key(m)]!==undefined?{v:fcst[key(m)],s:'fc'}:
+    fauto[key(m)]!==undefined?{v:fauto[key(m)],s:'stat'}:null);
+  let L=-1;kn.forEach((k,i)=>{if(k)L=i});const off=L>=0?kn[L].v-monthList[L].snap:0;
+  return monthList.map((m,i)=>kn[i]||{v:Math.round((L>=0?m.snap+off*Math.max(0,1-(i-L)/12):0)*100)/100,s:'pro'})}
+function ensoAuto(){return ensoAutoFor(MONTHS)}
+function lagMap(){
+  const z0=now.getFullYear()*12+now.getMonth()-14,ext=Array.from({length:30},(_,i)=>{const z=z0+i,y=Math.floor(z/12),mo=z%12+1;return{y,mo,snap:SN[mo]??0}});
+  const map={...allObs};ensoAutoFor(ext).forEach((r,i)=>{if(map[key(ext[i])]===undefined)map[key(ext[i])]=r.v});
+  if(manual)MONTHS.forEach(m=>{if(mv[m.m]!==undefined)map[key(m)]=mv[m.m]});
+  return map}
+async function load(){mode='load';errs=[];window.__b=null;stat();
+  for(const s of SRC){try{window.__b=null;const d=s.p(await ft(s.u));if(!Object.keys(d).length)throw new Error('data kosong');
+  allObs=d;srcName=s.n+((window.__b&&window.__b.kind==='RONI')||/Rnino/.test(s.u)?' · SKALA RONI (bukan OISST): koreksi ENSO kurang sebanding':'');
+  mode='live';fAt=new Date();const b=window.__b;fcst=(b&&b.forecast)||{};mtd=(b&&b.mtd)||{};fauto=(b&&b.forecastAuto)||{};
+  try{localStorage.setItem(CK,JSON.stringify({allObs,fcst,mtd,fauto,srcName,t:fAt}))}catch(e){}return fin()}catch(e){errs.push(s.u.split('/').pop()+': '+(e.name==='AbortError'?'timeout':e.message))}}
+  try{const c=JSON.parse(localStorage.getItem(CK)||'null');if(c&&c.allObs){({allObs,fcst,mtd,fauto,srcName}=c);fcst=fcst||{};mtd=mtd||{};fauto=fauto||{};fAt=new Date(c.t);mode='cache';return fin()}}catch(e){}
+  allObs={};fcst={};mtd={};fauto={};srcName='Snapshot bawaan (tanpa data NOAA: koreksi ENSO nonaktif)';mode='snap';fin()}
+function compute(monthList=MONTHS,ensoValues=null){
+  const rows=[],months=[],map=lagMap(),nowZ=now.getFullYear()*12+now.getMonth();
+  monthList.forEach((m,i)=>{
+    const e=ensoValues?ensoValues[i]:(manual?mv[MONTHS[i].m]:auto[i].v);
+    const f=fit(m.mo),lead=Math.max(0,m.y*12+m.mo-1-nowZ),x=lagE(m.y,m.mo,map),xe=x===null?e:x;
+    const att=1-ATT*Math.min(1,Math.max(0,lead-1)/11);
+    const {F,mu}=predict(f,xe,att),Nm=f.mean,scale=Nm/NORM(m.mo);
+    let mean=0;
+    [0,1,2].forEach(d=>{
+      const base=CLIM[(m.mo-1)*3+d]*scale,mn=base*F,cvd=Math.min(1.5,Math.sqrt(CVD*CVD+(.04*lead)**2)),ds=dist(mn,cvd,0);
+      mean+=mn;const proj=Math.round(mn),r=proj/base,cat=r<.85?'bn':r>1.15?'an':'n';
+      rows.push({bulan:m.m,y:m.y,dn:['I','II','III'][d],base:Math.round(base),e,a:f.a,b:f.b,n:f.n,F,fitOK:f.ok,proj,p10:Math.max(0,Math.round(ds.p10)),p90:Math.round(ds.p90),cat})});
+    const cvm=Math.min(1.5,Math.sqrt(f.cv**2+(.04*lead)**2)),ds=dist(mean,cvm,0);
+    let pb=gp(ds.a,Math.max(0,.85*Nm/ds.th)),pa=1-gp(ds.a,Math.max(0,1.15*Nm/ds.th));
+    pb=Math.max(0,Math.min(1,pb));pa=Math.max(0,Math.min(1,pa));
+    const pn=Math.max(0,1-pb-pa),cat=pb>=pn&&pb>=pa?'bn':pa>=pn?'an':'n';
+    months.push({m,e,x:xe,F,a:f.a,b:f.b,n:f.n,fitOK:f.ok,Nm:Math.round(Nm),mean:Math.round(mean),p10:Math.round(ds.p10),p90:Math.round(ds.p90),pb,pn,pa,cat})});
+  return{rows,months}}
+function renderHindcast(){
+  const T=[];
+  RAIN.forEach(t=>{const x=lagE(t.y,t.mo,allObs);if(x===null)return;
+    const f=fit(t.mo,t.y),p=predict(f,x,1),ds=dist(p.mu,f.cv,0);
+    T.push({mo:t.mo,y:t.mm,c:f.mean,m:p.mu,inn:t.mm>=ds.p10&&t.mm<=ds.p90})});
+  const S=(a,g)=>{const q=a.filter(g);if(!q.length)return null;const n=q.length,mse=k=>q.reduce((s,v)=>s+(v[k]-v.y)**2,0)/n,
+    mae=k=>q.reduce((s,v)=>s+Math.abs(v[k]-v.y),0)/n,bias=k=>q.reduce((s,v)=>s+v[k]-v.y,0)/n;
+    return{n,mc:mse('c'),mm:mse('m'),ac:mae('c'),am:mae('m'),bc:bias('c'),bm:bias('m'),cov:q.filter(v=>v.inn).length/n}};
+  const grp=[['Semua bulan',()=>true],['Jun–Nov (musim sensitif ENSO)',v=>v.mo>=6&&v.mo<=11],['Des–Mei',v=>v.mo>=12||v.mo<=5]];
+  const f=x=>x.toFixed(1),th=document.querySelector('#hindcast').closest('table').querySelector('thead');
+  th.innerHTML='<tr><th>Kelompok / metode</th><th>n uji</th><th>MAE (mm)</th><th>RMSE (mm)</th><th>Bias (mm)</th><th>MSESS vs klim.</th><th>Cakupan P10–P90</th></tr>';
+  let h='';
+  grp.forEach(([nm,g])=>{const s=S(T,v=>g(v));if(!s)return;
+    h+=`<tr><td>${nm} — klimatologi stasiun (LOYO)</td><td>${s.n}</td><td>${f(s.ac)}</td><td>${f(Math.sqrt(s.mc))}</td><td>${f(s.bc)}</td><td>0</td><td>—</td></tr>`+
+       `<tr><td>${nm} — model GLM + ENSO berlag</td><td>${s.n}</td><td>${f(s.am)}</td><td>${f(Math.sqrt(s.mm))}</td><td>${f(s.bm)}</td><td>${(1-s.mm/s.mc).toFixed(3)}</td><td>${Math.round(s.cov*100)}% (target 80%)</td></tr>`});
+  document.getElementById('hindcast').innerHTML=h+`<tr><td colspan="7">Leave-one-year-out ${TRAIN_MIN_Y}–${TRAIN_MAX_Y}; tahun target dikeluarkan dari kalibrasi. MSESS &gt; 0 berarti lebih baik daripada klimatologi stasiun; ≤ 0 berarti koreksi ENSO tidak menambah keterampilan. Nol di luar Jul–Nov dibuang sebagai data hilang.</td></tr>`}
+(()=>{const i=document.getElementById('iod');if(i){i.disabled=true;i.title='Belum memengaruhi proyeksi';i.parentElement.firstChild.textContent='IOD (info saja) '}})();
+/* ==================== BATAS AKHIR ENGINE V6 ==================== */
+
+const validRain=TELE.filter(t=>Number.isFinite(t.mm)&&t.mm>=0).sort((a,b)=>a.y-b.y||a.mo-b.mo);
+const ORIGIN=validRain[validRain.length-1] || {y:2025,mo:12,mm:null};
+const TRAIN_START_YEAR=2000;
+const TRAIN_END_YEAR=2025;
+const now=new Date();
+const REPORT_YEAR=now.getFullYear();
+const CALENDAR_MONTHS=Array.from({length:12},(_,i)=>{const mo=i+1;return{m:NM[mo],full:FL[mo],y:REPORT_YEAR,mo,snap:SN[mo]??0}});
+const MONTHS=Array.from({length:12},(_,i)=>{const z=now.getFullYear()*12+now.getMonth()+1+i,y=Math.floor(z/12),mo=z%12+1;return{m:NM[mo],full:FL[mo],y,mo,snap:SN[mo]??0}});
+const DAS=MONTHS.flatMap((m,i)=>[0,1,2].map(d=>({mi:i,bulan:m.m,y:m.y,mo:m.mo,d,dn:['I','II','III'][d],base:CLIM[(m.mo-1)*3+d]})));
+const NORM=mo=>CLIM.slice((mo-1)*3,mo*3).reduce((a,b)=>a+b,0);
+
+function lg(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,.001208650973866179,-5.395239384953e-6];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(const k of c)s+=k/++y;return -t+Math.log(2.5066282746310005*s/x)}
+function gp(a,x){if(x<=0)return 0;if(x<a+1){let ap=a,s=1/a,d=s;for(let n=0;n<300;n++){ap++;d*=x/ap;s+=d;if(Math.abs(d)<Math.abs(s)*1e-10)break}return s*Math.exp(-x+a*Math.log(x)-lg(a))}
+let b=x+1-a,c=1e30,d=1/b,h=d;for(let i=1;i<300;i++){const an=-i*(i-a);b+=2;d=an*d+b;if(Math.abs(d)<1e-30)d=1e-30;c=b+an/c;if(Math.abs(c)<1e-30)c=1e-30;d=1/d;const dl=d*c;h*=dl;if(Math.abs(dl-1)<1e-10)break}return 1-Math.exp(-x+a*Math.log(x)-lg(a))*h}
+function gq(p,a,th){let lo=0,hi=a*th*20+10;for(let i=0;i<70;i++){const m=(lo+hi)/2;gp(a,m/th)<p?lo=m:hi=m}return(lo+hi)/2}
+function dist(rem,cv,off){if(rem<.01)return{p10:off,p90:off,a:null};const a=1/(cv*cv),th=rem/a;return{p10:off+gq(.1,a,th),p90:off+gq(.9,a,th),a,th}}
+
+const NUM=s=>s!==''&&!isNaN(+s);
+const pSst=t=>{const o={};t.split(/\r?\n/).forEach(l=>{const p=l.trim().split(/\s+/);if(p.length>=10&&p.slice(0,10).every(NUM)){const y=+p[0],m=+p[1];if(y>1900&&m>=1&&m<=12)o[y+'-'+m]=+p[9]}});return o};
+const pRn=t=>{const o={};t.split(/\r?\n/).forEach(l=>{const p=l.trim().split(/\s+/);if(p.length===3&&p.every(NUM)){const y=+p[0],m=+p[1];if(y>1900&&m>=1&&m<=12)o[y+'-'+m]=+p[2]}});return o};
+const BRIDGE_URL='https://script.google.com/macros/s/AKfycbxuPrth8vy5T7T5yk9BTnJDnbjfqKMumdzK2oydkAEAoFqlgPyMdge7XL3LMo68UBxlUg/exec';
+window.__b=null;
+const pBr=t=>{const j=JSON.parse(t);if(!j.ok)throw new Error('jembatan gagal');window.__b=j;return j.series};
+const SRC=[...(BRIDGE_URL?[{n:'Apps Script → NOAA CPC',u:BRIDGE_URL,p:pBr}]:[]),{n:'NOAA CPC · sstoi.indices',u:'https://www.cpc.ncep.noaa.gov/data/indices/sstoi.indices',p:pSst},{n:'NOAA CPC · Rnino34.ascii.txt',u:'https://www.cpc.ncep.noaa.gov/data/indices/Rnino34.ascii.txt',p:pRn}];
+async function ft(u,ms=12000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u,{cache:'no-store',signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}finally{clearTimeout(t)}}
+
+const CK='enso_wajo_v2';let allObs={},fcst={},mtd={},fauto={},srcName='',mode='load',fAt=null,errs=[],manual=false,mv={},auto=[],calendarAuto=[];
+const key=m=>m.y+'-'+m.mo;
+const ensoOf=i=>manual?mv[MONTHS[i].m]:auto[i].v;
+
+function fin(){auto=ensoAuto();calendarAuto=ensoAutoFor(CALENDAR_MONTHS);sliders();stat();render()}
+function stat(){const b=document.getElementById('badge');b.className='badge '+({load:'',live:'live',cache:'cache',snap:'snap'}[mode]);b.textContent={load:'memuat…',live:'NOAA historis',cache:'cache historis',snap:'snapshot'}[mode];
+document.getElementById('sl').textContent=mode==='load'?'Menghubungi NOAA CPC…':srcName;
+let msg=mode==='live'?'Diambil '+fAt.toLocaleString('id-ID')+'.':mode==='cache'?'NOAA gagal ('+errs.join('; ')+'). Memakai cache '+fAt.toLocaleString('id-ID')+'.':mode==='snap'?'NOAA gagal ('+errs.join('; ')+'). Kemungkinan CORS; nilai ENSO analog bawaan dipakai.':''; const ready=Array.from({length:12},(_,i)=>beta(i+1)).filter(x=>x.ok).length; msg+=' Kalibrasi ENSO memenuhi syarat pada '+ready+'/12 bulan (minimal '+MIN_N_ENSO+' pasangan valid per bulan). Observasi valid terakhir di TELE (data latih): '+FL[ORIGIN.mo]+' '+ORIGIN.y+'.'; document.getElementById('sm').textContent=msg}
+
+const f1=x=>(Math.round(x*10)/10).toFixed(1),CN={bn:'Bawah Normal',n:'Normal',an:'Atas Normal'},HX={bn:'#E3A857',n:'#7387B8',an:'#39B7A6'};
+function render(){
+  const forecast=compute(MONTHS);
+  const calendarENSO=CALENDAR_MONTHS.map((m,i)=>{
+    const fi=MONTHS.findIndex(f=>f.y===m.y&&f.mo===m.mo);
+    return manual&&fi>=0?mv[MONTHS[fi].m]:(calendarAuto[i]?.v??SN[m.mo]??0);
+  });
+  const calendar=compute(CALENDAR_MONTHS,calendarENSO);
+  hero(calendar.rows,calendar.months);
+  chart(forecast.months);mtab(forecast.months);dtab(forecast.rows);renderHindcast();
+  document.getElementById('period').textContent=`ZOM 566 · WAJO · ${MONTHS[0].m} ${MONTHS[0].y} – ${MONTHS[11].m} ${MONTHS[11].y} · PRAKIRAAN 12 BULAN KE DEPAN`;
+}
+
+function hero(rows,months){
+  const tb=rows.reduce((s,r)=>s+r.base,0),tp=rows.reduce((s,r)=>s+r.proj,0),pc=(tp-tb)/tb*100;
+  const cur=calendarAuto[now.getMonth()]||{v:SN[now.getMonth()+1]??0,s:'pro'};
+  const e=cur.v,ph=e>=.5?'El Niño':e<=-.5?'La Niña':'Netral';
+  const last=`${FL[ORIGIN.mo]} ${ORIGIN.y}`;
+  const ensSrc=({obs:'observasi bulanan NOAA',mtd:'rerata mingguan bulan berjalan NOAA',fc:'prakiraan Spreadsheet/BoM (cadangan)',stat:'estimasi statistik berbasis seri NOAA',pro:'lintasan analog snapshot'}[cur.s]||'sumber tidak teridentifikasi');
+  const st=[
+    ['BASELINE KLIMATOLOGI',tb.toLocaleString('id-ID'),'mm','Normal Jan–Des ZOM 566 periode 1991–2020; bukan prakiraan khusus '+REPORT_YEAR],
+    ['ESTIMASI MODEL '+REPORT_YEAR,tp.toLocaleString('id-ID'),'mm',`${pc<0?'▼':'▲'} ${Math.abs(pc).toFixed(1)}% dari normal klimatologi · estimasi Jan–Des ${REPORT_YEAR}, bukan total aktual`,pc<0?'down':'up'],
+    ['ENSO TERKINI',ph,'',`${FL[now.getMonth()]} ${now.getFullYear()} · Niño-3.4 ${f1(e)} °C · sumber: ${ensSrc}`],
+    ['AKHIR DATA LATIH HUJAN',f1(ORIGIN.mm),'mm',`TELE tetap 2008–2025; terakhir ${last}`,'']
+  ];
+  document.getElementById('hero').innerHTML=st.map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}<small>${s[2]}</small></div>${s[3]?`<div class="d ${s[4]||''}">${s[3]}</div>`:''}</div>`).join('')}
+
+function sliders(){document.getElementById('sd').innerHTML=MONTHS.map((m,i)=>{const v=manual?mv[m.m]:auto[i].v,T={obs:['obs','OBS'],mtd:['mtd','MTD'],fc:['fc','FCST'],stat:['','STAT'],pro:['','PROY']},t=manual?['man','MAN']:T[auto[i].s];
+return`<div class="sc"><div class="m">${m.m} ${String(m.y).slice(2)}</div><input type="range" min="-2" max="3.5" step="0.1" value="${Math.max(-2,Math.min(3.5,v))}" data-m="${m.m}" ${manual?'':'disabled'}><div class="v" id="v-${m.m}">${v.toFixed(2)}</div><div class="src ${t[0]}">${t[1]}</div></div>`}).join('');
+document.querySelectorAll('#sd input').forEach(inp=>inp.addEventListener('input',e=>{const k=e.target.dataset.m,v=parseFloat(e.target.value);mv[k]=v;document.getElementById('v-'+k).textContent=v.toFixed(2);render()}))}
+
+const NS='http://www.w3.org/2000/svg';const el=(t,a,p)=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);p.appendChild(n);return n};
+function chart(months){
+  const svg=document.getElementById('chart');
+  svg.innerHTML='';
+  const W=1080,H=420,pl=48,pr=20,pt=50,pb=44,pw=W-pl-pr,ph=H-pt-pb,n=months.length,g=18,bw=(pw-g*(n-1))/n;
+  const mx=Math.max(...months.map(r=>Math.max(r.p90,r.Nm,r.mean)))*1.08;
+  for(let i=0;i<=5;i++){
+    const y=pt+ph-ph*i/5;
+    el('line',{x1:pl,x2:W-pr,y1:y,y2:y,stroke:'var(--grid)'},svg);
+    el('text',{x:pl-8,y:y+3,'text-anchor':'end',class:'ax'},svg).textContent=Math.round(mx*i/5);
+  }
+  const tip=document.getElementById('tip'),cd=svg.parentElement;
+  months.forEach((r,i)=>{
+    const x=pl+i*(bw+g);
+    const baseH=r.Nm/mx*ph,baseY=pt+ph-baseH;
+    const projH=r.mean/mx*ph,projY=pt+ph-projH;
+    const baseX=x+bw*0.06,baseW=bw*0.88;
+    el('rect',{
+      x:baseX,y:baseY,width:baseW,height:Math.max(baseH,1.5),rx:3,
+      fill:'rgba(141,160,199,0.24)',stroke:'rgba(141,160,199,0.9)','stroke-width':1.1,
+      class:'baseline-bar'
+    },svg);
+    el('line',{
+      x1:x+bw/2,x2:x+bw/2,
+      y1:pt+ph-r.p90/mx*ph,y2:pt+ph-r.p10/mx*ph,
+      stroke:'#3A4A72','stroke-width':1.8
+    },svg);
+    const projW=bw*0.54,projX=x+(bw-projW)/2;
+    const rc=el('rect',{
+      x:projX,y:projY,width:projW,height:Math.max(projH,1.5),rx:3,
+      fill:HX[r.cat],class:'bar'
+    },svg);
+    rc.addEventListener('mousemove',ev=>{
+      const b=cd.getBoundingClientRect();
+      tip.style.left=ev.clientX-b.left+14+'px';
+      tip.style.top=ev.clientY-b.top-10+'px';
+      tip.style.opacity=1;
+      tip.innerHTML=`<b>${r.m.full} ${r.m.y}</b><br>Baseline klimatologi: ${r.Nm} mm<br>Estimasi model: <b>${r.mean} mm</b><br>Selisih: ${r.mean-r.Nm>0?'+':''}${r.mean-r.Nm} mm<br>P10–P90: ${r.p10}–${r.p90} mm<br>Niño-3.4 ${f1(r.e)}°C · F ${r.F.toFixed(2)}`;
+    });
+    rc.addEventListener('mouseleave',()=>tip.style.opacity=0);
+    el('line',{x1:x-2,x2:x+bw+2,y1:baseY,y2:baseY,class:'bt'},svg);
+  });
+  const es=v=>pt+36-((Math.max(-2,Math.min(3.5,v))+2)/5.5)*30;
+  el('path',{
+    d:months.map((r,i)=>(i?'L':'M')+(pl+i*(bw+g)+bw/2)+' '+es(r.e)).join(' '),
+    class:'el'
+  },svg);
+  months.forEach((m,mi)=>el('text',{
+    x:pl+mi*(bw+g)+bw/2,y:H-pb+18,'text-anchor':'middle',class:'ml'
+  },svg).textContent=m.m.m+' '+String(m.m.y).slice(2));
+}
+
+function mtab(ms){let h='',tb=0,tp=0;ms.forEach(c=>{const q=c.mean/c.Nm,d=c.mean-c.Nm;tb+=c.Nm;tp+=c.mean;
+h+=`<tr><td>${c.m.full} ${c.m.y}</td><td>${c.Nm} mm</td><td><b>${c.mean} mm</b></td><td>${c.p10}–${c.p90} mm</td><td>${Math.round(q*100)}% <span class="${d<0?'neg':'pos'}">(${d>0?'+':''}${d})</span></td><td>${f1(c.e)} °C</td><td>${c.F.toFixed(2)}${c.fitOK?'':' *'}</td>
+<td><div style="display:flex;align-items:center;gap:8px"><div class="pb"><i style="width:${c.pb*100}%;background:#E3A857"></i><i style="width:${c.pn*100}%;background:#7387B8"></i><i style="width:${c.pa*100}%;background:#39B7A6"></i></div><span>${Math.round(c.pb*100)}/${Math.round(c.pn*100)}/${Math.round(c.pa*100)}%</span></div></td><td><span class="cat ${c.cat}">${CN[c.cat]}</span></td></tr>`});
+document.getElementById('mb2').innerHTML=h+`<tr style="background:var(--bg2)"><td><b>TOTAL 12 BULAN PRAKIRAAN</b></td><td><b>${tb} mm</b></td><td><b>${tp} mm</b></td><td>—</td><td><b>${Math.round(tp/tb*100)}%</b></td><td colspan="4">* = koreksi ENSO tidak diterapkan karena data belum cukup</td></tr>`}
+
+function dtab(rows){let h='',last=null;rows.forEach(r=>{h+=`<tr class="${r.bulan!==last?'md':''}"><td>${r.bulan} ${r.dn} ${r.y}</td><td>${r.base} mm</td><td>${f1(r.e)} °C</td><td>${r.b.toFixed(2)} / ${r.n}${r.fitOK?' ✓':' —'}</td><td>${r.F.toFixed(2)}</td><td><b>${r.proj} mm</b></td><td>${r.p10}–${r.p90} mm</td><td><span class="cat ${r.cat}">${CN[r.cat]}</span></td></tr>`;last=r.bulan});document.getElementById('tb').innerHTML=h}
+
+document.getElementById('rf').onclick=load;document.getElementById('iod').oninput=render;
+document.getElementById('mb').onclick=e=>{manual=!manual;if(manual){mv={};MONTHS.forEach((m,i)=>mv[m.m]=auto[i].v)}e.target.textContent='✎ MANUAL: '+(manual?'HIDUP':'MATI');e.target.classList.toggle('on',manual);sliders();render()};
+auto=ensoAuto();calendarAuto=ensoAutoFor(CALENDAR_MONTHS);sliders();render();load();
+</script></body></html>
