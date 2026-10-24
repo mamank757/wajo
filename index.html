@@ -45,7 +45,7 @@ footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font:11
 </style></head><body><div class="wrap">
 <div class="eye" id="period">ZOM 566 · WAJO · PRAKIRAAN 12 BULAN KE DEPAN</div>
 <h1>Ringkasan curah hujan tahunan,<br><em>dan prakiraan 12 bulan ke depan</em>.</h1>
-<p class="sub">Kartu ringkasan membandingkan normal klimatologi tahunan ZOM 566 (1991–2020; tidak khusus untuk satu tahun) dengan estimasi model Januari–Desember tahun kalender berjalan. Grafik, slider ENSO, tabel bulanan, dan rincian dasarian tetap menampilkan prakiraan bergulir 12 bulan ke depan, mulai bulan berikutnya. Data hujan untuk pelatihan tetap dibekukan pada 2008–2025. Total tahun berjalan adalah estimasi model, bukan akumulasi hujan aktual, karena data observasi hujan setelah 2025 tidak dimasukkan ke TELE. Bukan prakiraan resmi BMKG.</p>
+<p class="sub">Kartu ringkasan membandingkan normal klimatologi tahunan ZOM 566 (1991–2020; tidak khusus untuk satu tahun) dengan estimasi model Januari–Desember tahun kalender berjalan. Grafik, slider ENSO, tabel bulanan, dan rincian dasarian tetap menampilkan prakiraan bergulir 12 bulan ke depan, mulai bulan berikutnya. Kalibrasi memakai seluruh bulan TELE yang sudah lengkap (sejak 1998). Total tahun berjalan menggabungkan hujan aktual TELE untuk bulan yang sudah lengkap dengan estimasi model untuk bulan sisanya. Bukan prakiraan resmi BMKG.</p>
 <div class="hero" id="hero"></div>
 
 <div class="sh"><b>01</b><h2>Indeks ENSO & IOD</h2><i></i></div>
@@ -59,11 +59,11 @@ footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font:11
 <svg id="chart" viewBox="0 0 1080 420"></svg><div id="tip"></div></div>
 
 <div class="sh"><b>03</b><h2>Total per bulan & peluang kategori — prakiraan 12 bulan</h2><i></i></div>
-<p class="desc">Tabel ini tetap untuk jendela prakiraan 12 bulan ke depan yang sama dengan grafik dan slider di atas. Peluang BN (&lt;85%), N, dan AN (&gt;115% baseline) dihitung memakai distribusi Gamma dengan CV bulanan asumsi 0,45; peluang ini belum terkalibrasi empiris.</p>
+<p class="desc">Tabel ini tetap untuk jendela prakiraan 12 bulan ke depan yang sama dengan grafik dan slider di atas. Peluang BN (&lt;85%), N, dan AN (&gt;115% baseline) dihitung memakai distribusi Gamma dengan CV bulanan dari sebaran historis tiap bulan (batas 0,2–1,5) yang melebar menurut lead; peluang ini belum terkalibrasi empiris.</p>
 <div class="tw"><table><thead><tr><th>Bulan</th><th>Baseline</th><th>Proyeksi</th><th>P10–P90</th><th>%</th><th>ENSO</th><th>Faktor F</th><th>Peluang BN / N / AN</th><th>Kategori</th></tr></thead><tbody id="mb2"></tbody></table></div>
 
 <div class="sh"><b>04</b><h2>Validasi historis (hindcast)</h2><i></i></div>
-<p class="desc">Evaluasi historis membandingkan baseline klimatologi dengan model yang dikoreksi ENSO. Pada versi ini, hindcast memakai Niño-3.4 teramati pada bulan target karena arsip prakiraan ENSO historis tidak tersedia di sumber kode. Karena itu, hasil ini adalah uji hubungan bersyarat, bukan ukuran murni keterampilan prakiraan operasional.</p>
+<p class="desc">Backtest rolling-origin: simulasi penerbitan setiap 1 Oktober. Pelatihan hanya memakai data hujan sebelum Oktober tahun asal; prediktor ENSO target dibangun dari informasi yang tersedia sampai September dengan persistensi yang meluruh (tanpa membaca ENSO aktual setelah tanggal asal). Target adalah November–Oktober berikutnya. Ini menguji protokol operasional dengan baseline ENSO sederhana, bukan merekonstruksi prakiraan resmi historis NOAA/BoM.</p>
 <div class="tw"><table><thead><tr><th>Metode</th><th>Jumlah uji</th><th>MAE (mm)</th><th>RMSE (mm)</th><th>Bias (mm)</th></tr></thead><tbody id="hindcast"></tbody></table></div>
 <div class="sh"><b>05</b><h2>Rincian dasarian (opsional)</h2><i></i></div>
 <div class="tw"><table><thead><tr><th>Periode</th><th>Baseline</th><th>ENSO</th><th>b ENSO / n</th><th>F</th><th>Proyeksi</th><th>P10–P90</th><th>Kategori</th></tr></thead><tbody id="tb"></tbody></table></div>
@@ -72,9 +72,9 @@ footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font:11
 <div class="mg">
 <div class="mc"><h3>Koreksi ENSO</h3><p>Faktor dikalibrasi dari hubungan historis log-rasio hujan terhadap Niño-3.4. Jika data pasangan tidak cukup, koreksi ENSO dinonaktifkan (F = 1).</p><div class="fm">ln(R/R₀) = a + b·ENSO + ε<br>F = exp(a + b·ENSO)</div></div>
 <div class="mc"><h3>Kalibrasi koefisien</h3><p>Regresi log-rasio dengan intersep; koefisien kemiringan disusutkan ke nol untuk mengurangi ekstrem pada sampel terbatas. Minimal 8 pasangan valid per bulan adalah syarat awal, bukan bukti validasi.</p><div class="fm">y = ln(R/R₀) = a + b·ENSO<br>b = b_raw × n/(n + 8)</div></div>
-<div class="mc"><h3>Selang Gamma</h3><p>Hujan kontinu, condong ke kanan, bersatuan mm. CV dasarian 0,9; bulanan 0,45.</p><div class="fm">α = 1/CV², θ = λ'/α<br>P10/P90 = GAMMA.INV(p, α, θ)</div></div></div>
-<div class="cv"><b>Keterbatasan dan status ilmiah:</b> Backtest rolling-origin 2010–2025 (data latih hanya sebelum bulan asal, 2.268 prediksi bulanan lead 1–12) menunjukkan bahwa persistensi ENSO meluruh (PROY) menurunkan bias rata-rata dari +15,6% (lintasan analog lama) menjadi sekitar 0%, dan MAPE total 12 bulan dari 31% menjadi 22,5%. Keterampilan terhadap klimatologi stasiun tetap kecil (MSESS ≈ +0,02; batas atas dengan ENSO sebenarnya ≈ +0,13), sehingga prakiraan ENSO resmi pada kolom FCST sangat dianjurkan. Bias sisa beberapa persen berganti tanda antarperiode (rezim basah/kering) dan tidak dikoreksi. Data hujan TELE dibekukan pada 2008–2025, dan hanya rentang tahun tersebut digunakan saat kalibrasi. Koefisien ENSO dilatih dari pasangan hujan historis dan Niño-3.4 historis NOAA. Nilai berlabel FCST berasal dari prakiraan yang dikirim melalui Spreadsheet/Apps Script (dalam konfigurasi ini, input BoM), sedangkan STAT adalah estimasi statistik. Definisi indeks BoM dan NOAA dapat berbeda, sehingga koreksi ENSO lintas-sumber ini bersifat eksperimental dan perlu diselaraskan sebelum dipakai sebagai prakiraan operasional; nilai ENSO yang hilang tidak diganti dengan nol. Bulan dengan kurang dari 8 pasangan valid tidak diberi koreksi ENSO. Data hujan nol tidak masuk regresi log-rasio, sehingga pengaruh terhadap peluang bulan kering belum dimodelkan secara terpisah. IOD belum memengaruhi proyeksi. CV Gamma 0,9 (dasarian) masih asumsi, sedangkan CV bulanan telah dikalibrasi secara dinamis dari variansi data historis per bulan dengan batas keamanan 0,35–0,75 untuk menghindari proyeksi P10 yang nol mutlak (ekstrem). Jika observasi bulan berjalan tersedia hanya sebagai total bulanan berjalan, pembagian ke dasarian merupakan alokasi berdasarkan normal, bukan pengukuran dasarian aktual. Pastikan CLIM benar-benar sesuai normal ZOM 566 1991–2020 dan uji hindcast terhadap baseline sebelum menilai keterampilan prediksi. Ini model eksperimental, bukan prakiraan resmi BMKG; bandingkan dengan informasi terbaru di iklim.bmkg.go.id.</div>
-<footer>SUMBER: NOAA CPC untuk seri historis Niño-3.4 dan estimasi statistik ENSO; normal ZOM 566 (1991–2020); telemetri BBWS Pompengan Jeneberang. Prakiraan ENSO masa depan adalah estimasi statistik/persistensi meluruh, bukan prakiraan resmi NOAA. Data latih hujan tetap 2008–2025. Model eksperimental.</footer></div>
+<div class="mc"><h3>Selang Gamma</h3><p>Hujan kontinu, condong ke kanan, bersatuan mm. CV dasarian 0,9 (asumsi); CV bulanan dari data historis.</p><div class="fm">α = 1/CV², θ = λ'/α<br>P10/P90 = GAMMA.INV(p, α, θ)</div></div></div>
+<div class="cv"><b>Keterbatasan dan status ilmiah:</b> Bagian hindcast dihitung ulang dengan rolling-origin setiap 1 Oktober, data hujan pelatihan hanya sebelum tanggal asal, dan ENSO masa depan diproyeksikan tanpa memakai observasi target. Metrik yang tampil bergantung pada data hujan yang tersedia dan seri ENSO yang berhasil dimuat; angka ini bukan rekonstruksi arsip prakiraan ENSO resmi. Bias sisa beberapa persen berganti tanda antarperiode (rezim basah/kering) dan tidak dikoreksi. Kalibrasi memakai bulan TELE yang sudah lengkap sejak 1998; bulan berjalan dan nol yang mencurigakan (daftar SUSPECT_ZERO) tidak dipakai. Koefisien ENSO dilatih dari pasangan hujan historis dan Niño-3.4 historis NOAA. Nilai berlabel FCST berasal dari prakiraan yang dikirim melalui Spreadsheet/Apps Script (dalam konfigurasi ini, input BoM), sedangkan STAT adalah estimasi statistik. Definisi indeks BoM dan NOAA dapat berbeda, sehingga koreksi ENSO lintas-sumber ini bersifat eksperimental dan perlu diselaraskan sebelum dipakai sebagai prakiraan operasional; nilai ENSO yang hilang tidak diganti dengan nol. Bulan dengan kurang dari 8 pasangan valid tidak diberi koreksi ENSO. Data hujan nol tidak masuk regresi log-rasio, sehingga pengaruh terhadap peluang bulan kering belum dimodelkan secara terpisah. IOD belum memengaruhi proyeksi. CV Gamma 0,9 (dasarian) masih asumsi, sedangkan CV bulanan telah dikalibrasi secara dinamis dari variansi data historis per bulan dengan batas 0,2–1,5 untuk menghindari proyeksi P10 yang nol mutlak (ekstrem). Jika observasi bulan berjalan tersedia hanya sebagai total bulanan berjalan, pembagian ke dasarian merupakan alokasi berdasarkan normal, bukan pengukuran dasarian aktual. Pastikan CLIM benar-benar sesuai normal ZOM 566 1991–2020 dan uji hindcast terhadap baseline sebelum menilai keterampilan prediksi. Ini model eksperimental, bukan prakiraan resmi BMKG; bandingkan dengan informasi terbaru di iklim.bmkg.go.id.</div>
+<footer>SUMBER: NOAA CPC untuk seri historis Niño-3.4 dan estimasi statistik ENSO; normal ZOM 566 (1991–2020); telemetri BBWS Pompengan Jeneberang. Prakiraan ENSO masa depan adalah estimasi statistik/persistensi meluruh, bukan prakiraan resmi NOAA. Data latih dibatasi berdasarkan tanggal asal pada setiap simulasi rolling-origin. Model eksperimental.</footer></div>
 <script>
 const CLIM=[41,34,39,31,35,31,34,44,57,60,71,89,107,79,101,100,91,73,74,66,41,25,21,22,23,18,27,37,33,41,48,47,53,45,38,55];
 const NM=['','JAN','FEB','MAR','APR','MEI','JUN','JUL','AGU','SEP','OKT','NOV','DES'];
@@ -115,12 +115,12 @@ const TELE = [
 ];
 
 /* ===== ENGINE v6 ===== */
-const TRAIN_MIN_Y=1998, TRAIN_MAX_Y=2025, E_LO=-2, E_HI=2.5, F_LO=.3, F_HI=2.5, T_MIN=1.65, ATT=.35;
-const RAIN=TELE.filter(t=>t.y>=TRAIN_MIN_Y&&t.y<=TRAIN_MAX_Y&&Number.isFinite(t.mm)&&t.mm>=0&&(t.mm>0||(t.mo>=7&&t.mo<=11)));
+const TRAIN_MIN_Y=1998, NOWZ0=new Date().getFullYear()*12+new Date().getMonth(), SUSPECT_ZERO=['1999-10','1999-11'], E_LO=-2, E_HI=2.5, F_LO=.3, F_HI=2.5, T_MIN=1.65, ATT=.35;
+const RAIN_ALL=TELE.filter(t=>t.y>=TRAIN_MIN_Y&&!SUSPECT_ZERO.includes(t.y+'-'+t.mo)&&Number.isFinite(t.mm)&&t.mm>=0&&(t.mm>0||(t.mo>=7&&t.mo<=11)));
+const RAIN=RAIN_ALL.filter(t=>t.y*12+t.mo-1<NOWZ0);
 const prevKeys=(y,mo)=>[1,2,3].map(k=>{const z=y*12+mo-1-k;return Math.floor(z/12)+'-'+(z%12+1)});
 function lagE(y,mo,map){const v=prevKeys(y,mo).map(k=>map[k]).filter(Number.isFinite);return v.length>=2?v.reduce((s,x)=>s+x,0)/v.length:null}
-function fit(mo,skipY){
-  const P=[];RAIN.forEach(t=>{if(t.mo!==mo||t.y===skipY)return;const x=lagE(t.y,t.mo,allObs);if(x!==null)P.push({x,y:t.mm})});
+function fitPairs(mo,P){
   const n=P.length,mu0=n?P.reduce((s,p)=>s+p.y,0)/n:NORM(mo);
   const R={n,mean:mu0>0?mu0:NORM(mo),a:Math.log(Math.max(mu0,1e-6)),b:0,ok:false,cv:.5,t:0};
   if(n<MIN_N_ENSO||!(mu0>0))return R;
@@ -139,7 +139,22 @@ function fit(mo,skipY){
     R.a=a;R.b=b;R.ok=true}
   const sd=Math.sqrt(P.reduce((s,p)=>s+(p.y-Math.exp(R.a+R.b*p.x))**2,0)/Math.max(1,n-(R.ok?2:1)));
   R.cv=Math.min(1.5,Math.max(.2,sd/R.mean));
-  return R}
+  return R
+}
+function fit(mo,skipY){
+  const P=[];RAIN.forEach(t=>{if(t.mo!==mo||t.y===skipY)return;const x=lagE(t.y,t.mo,allObs);if(x!==null)P.push({x,y:t.mm})});
+  return fitPairs(mo,P)
+}
+function fitAtOrigin(mo,originZ){
+  const P=[];
+  RAIN_ALL.forEach(t=>{
+    const z=t.y*12+t.mo-1;
+    if(z>=originZ||t.mo!==mo)return;
+    const x=lagE(t.y,t.mo,allObs);
+    if(x!==null)P.push({x,y:t.mm});
+  });
+  return fitPairs(mo,P)
+}
 const beta=mo=>fit(mo);
 function predict(f,e,att){
   const x=Math.max(E_LO,Math.min(E_HI,e))*att;
@@ -186,24 +201,61 @@ function compute(monthList=MONTHS,ensoValues=null){
   return{rows,months}}
 function renderHindcast(){
   const T=[];
-  RAIN.forEach(t=>{const x=lagE(t.y,t.mo,allObs);if(x===null)return;
-    const f=fit(t.mo,t.y),p=predict(f,x,1),ds=dist(p.mu,f.cv,0);
-    T.push({mo:t.mo,y:t.mm,c:f.mean,m:p.mu,inn:t.mm>=ds.p10&&t.mm<=ds.p90})});
-  const S=(a,g)=>{const q=a.filter(g);if(!q.length)return null;const n=q.length,mse=k=>q.reduce((s,v)=>s+(v[k]-v.y)**2,0)/n,
-    mae=k=>q.reduce((s,v)=>s+Math.abs(v[k]-v.y),0)/n,bias=k=>q.reduce((s,v)=>s+v[k]-v.y,0)/n;
-    return{n,mc:mse('c'),mm:mse('m'),ac:mae('c'),am:mae('m'),bc:bias('c'),bm:bias('m'),cov:q.filter(v=>v.inn).length/n}};
-  const grp=[['Semua bulan',()=>true],['Jun–Nov (musim sensitif ENSO)',v=>v.mo>=6&&v.mo<=11],['Des–Mei',v=>v.mo>=12||v.mo<=5]];
+  const yearMax=Math.max(...RAIN.map(t=>t.y));
+  const firstOrigin=2010,lastOrigin=yearMax-1;
+  const actualByZ=new Map(RAIN.map(t=>[t.y*12+t.mo-1,t]));
+  for(let oy=firstOrigin;oy<=lastOrigin;oy++){
+    const originZ=oy*12+9; // 1 Oktober; data yang tersedia hanya sampai September
+    const targetStartZ=originZ+1; // November
+    const targetEndZ=originZ+12; // Oktober tahun berikutnya
+    const map={};
+    let lastZ=null,lastV=null;
+    Object.entries(allObs).forEach(([k,v])=>{
+      const [yy,mm]=k.split('-').map(Number),z=yy*12+mm-1;
+      if(Number.isFinite(v)&&z<originZ){map[k]=v;if(lastZ===null||z>lastZ){lastZ=z;lastV=v}}
+    });
+    // ENSO selepas 30 September hanya proyeksi persistence-decay daripada nilai terakhir yang tersedia.
+    if(lastZ!==null){
+      for(let z=originZ;z<targetEndZ;z++){
+        const yy=Math.floor(z/12),mm=z%12+1;
+        map[yy+'-'+mm]=lastV*Math.exp(-(z-lastZ)/TAU_ENSO);
+      }
+    }
+    for(let z=targetStartZ;z<=targetEndZ;z++){
+      const obs=actualByZ.get(z);if(!obs)continue;
+      const yy=Math.floor(z/12),mo=z%12+1;
+      const x=lagE(yy,mo,map);if(x===null)continue;
+      const f=fitAtOrigin(mo,originZ);
+      const lead=z-originZ,att=1-ATT*Math.min(1,Math.max(0,lead-1)/11),p=predict(f,x,att),ds=dist(p.mu,Math.min(1.5,Math.sqrt(f.cv**2+(.04*lead)**2)),0);
+      T.push({origin:oy,lead:z-originZ,mo,y:obs.mm,c:f.mean,m:p.mu,inn:obs.mm>=ds.p10&&obs.mm<=ds.p90,ntrain:f.n});
+    }
+  }
+  const S=q=>{
+    if(!q.length)return null;
+    const n=q.length,mse=k=>q.reduce((s,v)=>s+(v[k]-v.y)**2,0)/n,
+      mae=k=>q.reduce((s,v)=>s+Math.abs(v[k]-v.y),0)/n,
+      bias=k=>q.reduce((s,v)=>s+v[k]-v.y,0)/n;
+    return{n,mc:mse('c'),mm:mse('m'),ac:mae('c'),am:mae('m'),bc:bias('c'),bm:bias('m'),cov:q.filter(v=>v.inn).length/n};
+  };
+  const grp=[['Semua lead',()=>true],['Lead 1–3',v=>v.lead<=3],['Lead 4–6',v=>v.lead>=4&&v.lead<=6],['Lead 7–12',v=>v.lead>=7]];
   const f=x=>x.toFixed(1),th=document.querySelector('#hindcast').closest('table').querySelector('thead');
-  th.innerHTML='<tr><th>Kelompok / metode</th><th>n uji</th><th>MAE (mm)</th><th>RMSE (mm)</th><th>Bias (mm)</th><th>MSESS vs klim.</th><th>Cakupan P10–P90</th></tr>';
+  th.innerHTML='<tr><th>Kelompok / metode</th><th>n uji</th><th>MAE (mm)</th><th>RMSE (mm)</th><th>Bias (mm)</th><th>MSESS vs baseline</th><th>Cakupan P10–P90</th></tr>';
   let h='';
-  grp.forEach(([nm,g])=>{const s=S(T,v=>g(v));if(!s)return;
-    h+=`<tr><td>${nm} — klimatologi stasiun (LOYO)</td><td>${s.n}</td><td>${f(s.ac)}</td><td>${f(Math.sqrt(s.mc))}</td><td>${f(s.bc)}</td><td>0</td><td>—</td></tr>`+
-       `<tr><td>${nm} — model GLM + ENSO berlag</td><td>${s.n}</td><td>${f(s.am)}</td><td>${f(Math.sqrt(s.mm))}</td><td>${f(s.bm)}</td><td>${(1-s.mm/s.mc).toFixed(3)}</td><td>${Math.round(s.cov*100)}% (target 80%)</td></tr>`});
-  document.getElementById('hindcast').innerHTML=h+`<tr><td colspan="7">Leave-one-year-out ${TRAIN_MIN_Y}–${TRAIN_MAX_Y}; tahun target dikeluarkan dari kalibrasi. MSESS &gt; 0 berarti lebih baik daripada klimatologi stasiun; ≤ 0 berarti koreksi ENSO tidak menambah keterampilan. Nol di luar Jul–Nov dibuang sebagai data hilang.</td></tr>`}
+  grp.forEach(([nm,g])=>{
+    const q=T.filter(g),s=S(q);if(!s)return;
+    const skill=1-s.mm/s.mc;
+    h+=`<tr><td>${nm} — klimatologi latih</td><td>${s.n}</td><td>${f(s.ac)}</td><td>${f(Math.sqrt(s.mc))}</td><td>${f(s.bc)}</td><td>0.000</td><td>—</td></tr>`+
+       `<tr><td>${nm} — GLM + ENSO proyeksi</td><td>${s.n}</td><td>${f(s.am)}</td><td>${f(Math.sqrt(s.mm))}</td><td>${f(s.bm)}</td><td>${skill.toFixed(3)}</td><td>${Math.round(s.cov*100)}%</td></tr>`;
+  });
+  const origins=[...new Set(T.map(v=>v.origin))];
+  const minTrain=T.length?Math.min(...T.map(v=>v.ntrain)):0;
+  document.getElementById('hindcast').innerHTML=h+
+    `<tr><td colspan="7">Rolling-origin 1 Oktober, tahun asal ${origins.length?Math.min(...origins):'—'}–${origins.length?Math.max(...origins):'—'}; ${origins.length} jendela, ${T.length} pasangan target valid; target November–Oktober. Pelatihan hanya memakai hujan sebelum 1 Oktober tiap asal. ENSO target diproyeksikan dari nilai terakhir sebelum asal dengan peluruhan eksponensial (τ=${TAU_ENSO} bulan); tidak memakai ENSO aktual masa depan. Minimal pasangan latih per prediksi: ${minTrain}. MSESS > 0 berarti lebih baik dari baseline. Ini bukan rekonstruksi prakiraan ENSO resmi historis.</td></tr>`;
+}
 (()=>{const i=document.getElementById('iod');if(i){i.disabled=true;i.title='Belum memengaruhi proyeksi';i.parentElement.firstChild.textContent='IOD (info saja) '}})();
 /* ==================== BATAS AKHIR ENGINE V6 ==================== */
 
-const validRain=TELE.filter(t=>Number.isFinite(t.mm)&&t.mm>=0).sort((a,b)=>a.y-b.y||a.mo-b.mo);
+const validRain=TELE.filter(t=>Number.isFinite(t.mm)&&t.mm>=0&&t.y*12+t.mo-1<NOWZ0).sort((a,b)=>a.y-b.y||a.mo-b.mo);
 const ORIGIN=validRain[validRain.length-1] || {y:2025,mo:12,mm:null};
 const TRAIN_START_YEAR=2000;
 const TRAIN_END_YEAR=2025;
@@ -252,16 +304,17 @@ function render(){
 }
 
 function hero(rows,months){
-  const tb=rows.reduce((s,r)=>s+r.base,0),tp=rows.reduce((s,r)=>s+r.proj,0),pc=(tp-tb)/tb*100;
+  const obsMm=c=>{const t=TELE.find(r=>r.y===c.m.y&&r.mo===c.m.mo);return t&&Number.isFinite(t.mm)&&t.mm>=0&&c.m.y*12+c.m.mo-1<NOWZ0&&(t.mm>0||(c.m.mo>=7&&c.m.mo<=11))?t.mm:null};
+  const tb=months.reduce((s,c)=>s+c.Nm,0),tp=months.reduce((s,c)=>{const o=obsMm(c);return s+(o===null?c.mean:o)},0),pc=(tp-tb)/tb*100,nObs=months.filter(c=>obsMm(c)!==null).length,CLIMTOT=CLIM.reduce((a,b)=>a+b,0);
   const cur=calendarAuto[now.getMonth()]||{v:SN[now.getMonth()+1]??0,s:'pro'};
   const e=cur.v,ph=e>=.5?'El Niño':e<=-.5?'La Niña':'Netral';
   const last=`${FL[ORIGIN.mo]} ${ORIGIN.y}`;
   const ensSrc=({obs:'observasi bulanan NOAA',mtd:'rerata mingguan bulan berjalan NOAA',fc:'prakiraan Spreadsheet/BoM (cadangan)',stat:'estimasi statistik berbasis seri NOAA',pro:'persistensi meluruh dari observasi terakhir'}[cur.s]||'sumber tidak teridentifikasi');
   const st=[
-    ['BASELINE KLIMATOLOGI',tb.toLocaleString('id-ID'),'mm','Normal Jan–Des ZOM 566 periode 1991–2020; bukan prakiraan khusus '+REPORT_YEAR],
-    ['ESTIMASI MODEL '+REPORT_YEAR,tp.toLocaleString('id-ID'),'mm',`${pc<0?'▼':'▲'} ${Math.abs(pc).toFixed(1)}% dari normal klimatologi · estimasi Jan–Des ${REPORT_YEAR}, bukan total aktual`,pc<0?'down':'up'],
+    ['NORMAL STASIUN TELE',Math.round(tb).toLocaleString('id-ID'),'mm','Rerata TELE '+TRAIN_MIN_Y+'–'+ORIGIN.y+' · normal ZOM 566 1991–2020 = '+CLIMTOT.toLocaleString('id-ID')+' mm'],
+    ['TOTAL '+REPORT_YEAR+' (AKTUAL + MODEL)',Math.round(tp).toLocaleString('id-ID'),'mm',`${pc<0?'▼':'▲'} ${Math.abs(pc).toFixed(1)}% dari normal stasiun · ${nObs} bulan aktual TELE + ${12-nObs} bulan estimasi model`,pc<0?'down':'up'],
     ['ENSO TERKINI',ph,'',`${FL[now.getMonth()+1]} ${now.getFullYear()} · Niño-3.4 ${f1(e)} °C · sumber: ${ensSrc}`],
-    ['AKHIR DATA LATIH HUJAN',f1(ORIGIN.mm),'mm',`TELE tetap 2008–2025; terakhir ${last}`,'']
+    ['AKHIR DATA LATIH HUJAN',f1(ORIGIN.mm),'mm',`Kalibrasi memakai bulan lengkap ${TRAIN_MIN_Y}–${last}`,'']
   ];
   document.getElementById('hero').innerHTML=st.map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}<small>${s[2]}</small></div>${s[3]?`<div class="d ${s[4]||''}">${s[3]}</div>`:''}</div>`).join('')}
 
